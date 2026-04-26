@@ -1,7 +1,7 @@
 # Retail Intelligence Platform
 
 An end-to-end data pipeline I built on Snowflake to understand how data 
-actually moves in real companies — from raw messy files all the way to 
+actually moves in real companies, from raw messy files all the way to 
 business-ready analytics.
 
 I come from a SQL + Python background and wanted to go beyond basic 
@@ -44,7 +44,7 @@ Realistic enough to build proper business logic on top of.
 | Products | JSON | 500 |
 | Web Events | JSON | 50,000 |
 
-Products and web events come in as JSON — stored as Snowflake VARIANT 
+Products and web events come in as JSON, stored as Snowflake VARIANT 
 type and parsed using colon notation. First time I worked with 
 semi-structured data inside a SQL warehouse and it was genuinely 
 interesting.
@@ -55,7 +55,7 @@ interesting.
 
 ### RAW layer
 Loads data exactly as received. No transformations. Ever.
-This is intentional — if something breaks downstream, you can always 
+This is intentional, if something breaks downstream, you can always 
 go back to the original.
 
 Also built a pipeline_run_log table that tracks every load with 
@@ -64,7 +64,7 @@ row counts, timestamps, and status. Useful for debugging.
 ### STAGING layer
 This is where the actual SQL work happens:
 
-- Fixed date formats using TRY_TO_DATE (safe casting — returns NULL 
+- Fixed date formats using TRY_TO_DATE (safe casting, returns NULL 
   instead of erroring on bad data)
 - Removed duplicates using QUALIFY + ROW_NUMBER() window function
 - Calculated line revenue per order after discount
@@ -75,21 +75,21 @@ This is where the actual SQL work happens:
 ### MARTS layer
 Four tables that answer specific business questions:
 
-**mart_sales** — Daily revenue by category, country, order status. 
+**mart_sales**, Daily revenue by category, country, order status. 
 Includes AOV, gross profit margin, discount rate. 24,986 rows.
 
-**mart_customer_rfm** — RFM scoring for 9,194 customers.
-Recency, Frequency, Monetary — each scored 1 to 5 using NTILE() 
+**mart_customer_rfm**, RFM scoring for 9,194 customers.
+Recency, Frequency, Monetary, each scored 1 to 5 using NTILE() 
 window functions. Then classified into segments: Champions, Loyal 
 Customers, At Risk, Lost, New Customers, Needs Attention.
 This is what retention teams actually use to decide who to target 
 with campaigns.
 
-**mart_product** — Performance metrics for all 500 products.
+**mart_product**, Performance metrics for all 500 products.
 Revenue, units sold, return rate, gross margin, and rank within 
 category using RANK() window function.
 
-**mart_anomalies** — 730 days of daily revenue with Z-score and IQR 
+**mart_anomalies**, 730 days of daily revenue with Z-score and IQR 
 based anomaly detection. Flags Revenue Spikes and Revenue Drops 
 automatically. In a real setup this would trigger alerts to the 
 business team.
@@ -102,7 +102,7 @@ Row-by-row Python inserts were timing out. 200,000 web events at
 1,000 rows per batch = way too many round trips to Snowflake. 
 The connection kept dropping after a few hours.
 
-Switched to PUT + COPY INTO — upload the whole file to an internal 
+Switched to PUT + COPY INTO, upload the whole file to an internal 
 Snowflake stage, then load it in one shot. Went from hours to 
 literally 10 seconds. That was a proper learning moment.
 
@@ -110,12 +110,12 @@ literally 10 seconds. That was a proper learning moment.
 
 ## Tech stack
 
-- Snowflake — cloud data warehouse
-- Python — data generation and ingestion
-- SQL — all transformations and business logic
-- Snowflake Tasks — CRON-based pipeline automation
-- Faker — synthetic data generation
-- snowflake-connector-python — Python to Snowflake connection
+- Snowflake, cloud data warehouse
+- Python, data generation and ingestion
+- SQL, all transformations and business logic
+- Snowflake Tasks, CRON-based pipeline automation
+- Faker, synthetic data generation
+- snowflake-connector-python, Python to Snowflake connection
 
 ---
 
@@ -144,27 +144,27 @@ SNOWFLAKE_CONFIG = {
 Run in this order:
 
 ```bash
-# Step 1 — run sql/setup_snowflake.sql in Snowflake worksheet
-# Step 2 — generate the data
+# Step 1, run sql/setup_snowflake.sql in Snowflake worksheet
+# Step 2, generate the data
 python generate_data.py
-# Step 3 — load into Snowflake
+# Step 3, load into Snowflake
 python ingest.py
-# Step 4 — run sql/staging.sql in Snowflake worksheet
-# Step 5 — run sql/marts.sql in Snowflake worksheet
-# Step 6 — run sql/tasks.sql in Snowflake worksheet
+# Step 4, run sql/staging.sql in Snowflake worksheet
+# Step 5, run sql/marts.sql in Snowflake worksheet
+# Step 6, run sql/tasks.sql in Snowflake worksheet
 ```
 
 ---
 
 ## Screenshots
 
-### Raw layer — data loaded into Snowflake
+### Raw layer, data loaded into Snowflake
 ![raw layer](screenshots/raw-row-count.png)
 
-### Staging layer — cleaned and deduplicated
+### Staging layer, cleaned and deduplicated
 ![staging layer](screenshots/staging-row-count.png)
 
-### Marts — business analytics ready
+### Marts, business analytics ready
 ![marts](screenshots/mart-row-count.png)
 
 ### RFM customer segmentation
@@ -192,4 +192,4 @@ python ingest.py
 
 ## About
 
-**Akanksha Singh** — Aspiring Data Analyst
+**Akanksha Singh**, Data Analyst
