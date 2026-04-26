@@ -156,6 +156,59 @@ python ingest.py
 
 ---
 
+## A peek at the code
+
+The part I'm most proud of — switching from row-by-row inserts 
+to PUT + COPY INTO after the original approach kept timing out 
+on 200k records. Went from 3 hours to 10 seconds.
+
+```python
+def load_json_via_stage(cursor, filepath: Path, table: str):
+    """
+    Uploads a JSON file to Snowflake internal stage,
+    then loads it in one shot using COPY INTO.
+    Much faster than row-by-row inserts for large files.
+    """
+    run_id = str(uuid.uuid4())
+    log.info(f"Uploading {filepath.name} to stage...")
+
+    # Upload entire file to Snowflake internal stage
+    cursor.execute(
+        f"PUT file://{filepath.absolute()} @fast_stage "
+        f"AUTO_COMPRESS=TRUE OVERWRITE=TRUE"
+    )
+
+    # Load from stage into table in one operation
+    cursor.execute(f"""
+        COPY INTO {table} (raw_data, _source_file, _loaded_at, _run_id)
+        FROM (
+            SELECT $1, '{filepath}', CURRENT_TIMESTAMP(), '{run_id}'
+            FROM @fast_stage/{filepath.name}.gz
+        )
+        FILE_FORMAT = (TYPE = 'JSON' STRIP_OUTER_ARRAY = TRUE)
+        PURGE = TRUE
+    """)
+
+    cursor.execute(f"SELECT COUNT(*) FROM {table}")
+    log.info(f"Done — {cursor.fetchone()[0]:,} rows loaded into {table}")
+```
+
+And the RFM scoring logic in SQL:
+
+```sql
+-- Score each customer 1-5 on Recency, Frequency, Monetary
+-- NTILE splits customers into 5 equal buckets
+-- Recency: lower days since last order = better score (ASC)
+-- Frequency and Monetary: higher = better (DESC)
+
+NTILE(5) OVER (
+    ORDER BY DATEDIFF('day', last_order_date, CURRENT_DATE()) ASC
+) AS recency_score,
+
+NTILE(5) OVER (ORDER BY order_count DESC)  AS frequency_score,
+NTILE(5) OVER (ORDER BY total_spent DESC)  AS monetary_score
+```
+
 ## Screenshots
 
 ### Raw layer, data loaded into Snowflake
