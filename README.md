@@ -28,22 +28,7 @@ No manual running required once it's set up.
 
 ## The Architecture
 
-CSV + JSON files  
-⬇  
-Python (PUT + COPY INTO)  
-⬇  
-**RAW_DB** — exact copy, nothing changed  
-⬇  
-SQL transformations  
-⬇  
-**STAGING_DB** — cleaned, cast, deduplicated  
-⬇  
-SQL aggregations  
-⬇  
-**MARTS_DB** — business-ready, connects to Power BI / Tableau  
-
-Three separate Snowflake databases.  
-This is called **Medallion Architecture** and is how real data teams structure warehouses.
+![Pipeline Architecture](screenshots/architecture.png)
 
 ---
 
